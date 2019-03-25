@@ -29,6 +29,7 @@ export class Source implements pitometer.ISource {
   async fetch(query) {
     const response = await axios.post(`${this.queryUrl}?query=${query}`);
     const promresult = response.data;
+    console.log(JSON.stringify(promresult));
     return promresult.data.result[0].value[1];
   }
 }
