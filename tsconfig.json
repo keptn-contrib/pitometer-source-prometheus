@@ -10,7 +10,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "types": [
-      "node",
+      "node"
     ],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
