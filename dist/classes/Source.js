@@ -32,9 +32,19 @@ class Source {
         this.queryUrl = '';
         this.queryUrl = queryUrl;
     }
+    setOptions(options) {
+        this.timeStart = options.timeStart;
+        this.timeEnd = options.timeEnd;
+        this.context = options.context;
+    }
     fetch(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = yield axios_1.default.post(`${this.queryUrl}?query=${query}`);
+            if (!this.timeStart || !this.timeEnd)
+                throw new Error('No start and/or end time was set!');
+            // tslint:disable-next-line: max-line-length
+            const response = yield axios_1.default
+                // tslint:disable-next-line: max-line-length
+                .post(`${this.queryUrl}?query=${encodeURIComponent(query)}&start=${this.timeStart}&end=${this.timeEnd}`);
             const promresult = response.data;
             console.log(JSON.stringify(promresult));
             return promresult.data.result[0].value[1];

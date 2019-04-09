@@ -21,13 +21,27 @@ import * as pitometer from 'pitometer';
 export class Source implements pitometer.ISource {
 
   private queryUrl = '';
+  private timeStart: number;
+  private timeEnd: number;
+  private context: string;
 
   constructor({ queryUrl }) {
     this.queryUrl = queryUrl;
   }
 
+  public setOptions(options: pitometer.IOptions) {
+    this.timeStart = options.timeStart;
+    this.timeEnd = options.timeEnd;
+    this.context = options.context;
+  }
+
   async fetch(query) {
-    const response = await axios.post(`${this.queryUrl}?query=${query}`);
+    if (!this.timeStart || !this.timeEnd) throw new Error('No start and/or end time was set!');
+    // tslint:disable-next-line: max-line-length
+    const response = await axios
+      // tslint:disable-next-line: max-line-length
+      .post(`${this.queryUrl}?query=${encodeURIComponent(query)}&start=${this.timeStart}&end=${this.timeEnd}`);
+
     const promresult = response.data;
     console.log(JSON.stringify(promresult));
     return promresult.data.result[0].value[1];
