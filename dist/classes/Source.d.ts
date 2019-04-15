@@ -23,5 +23,5 @@ export declare class Source implements pitometer.ISource {
         queryUrl: any;
     });
     setOptions(options: pitometer.IOptions): void;
-    fetch(query: any): Promise<any>;
+    fetch(query: any): Promise<pitometer.ISourceResult[] | boolean>;
 }
