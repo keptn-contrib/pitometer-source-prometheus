@@ -21,15 +21,44 @@ import * as pitometer from 'pitometer';
 export class Source implements pitometer.ISource {
 
   private queryUrl = '';
+  private timeStart: number;
+  private timeEnd: number;
+  private context: string;
 
   constructor({ queryUrl }) {
     this.queryUrl = queryUrl;
   }
 
-  async fetch(query) {
-    const response = await axios.post(`${this.queryUrl}?query=${query}`);
+  public setOptions(options: pitometer.IOptions) {
+    this.timeStart = options.timeStart;
+    this.timeEnd = options.timeEnd;
+    this.context = options.context;
+  }
+
+  async fetch(query): Promise<pitometer.ISourceResult[] | boolean> {
+    if (!this.timeStart || !this.timeEnd) throw new Error('No start and/or end time was set!');
+    // tslint:disable-next-line: max-line-length
+    const response = await axios
+      // tslint:disable-next-line: max-line-length
+      .post(`${this.queryUrl}?query=${encodeURIComponent(query)}&start=${this.timeStart}&end=${this.timeEnd}`);
+
     const promresult = response.data;
-    console.log(JSON.stringify(promresult));
-    return promresult.data.result[0].value[1];
+
+    if (promresult.status !== 'success') {
+      throw new Error(`Prometheus query returned returned ${promresult.status} for (${query})`);
+    }
+
+    if (promresult.data.resultType === 'matrix') {
+      throw new Error(`Prometheus query returned a not supported matrix result for (${query})`);
+    }
+
+    return promresult.data.result.map((entry) => {
+      return {
+        key: JSON.stringify(entry.metric),
+        timestamp: entry.value[0],
+        value: entry.value[1],
+      };
+    });
+
   }
 }

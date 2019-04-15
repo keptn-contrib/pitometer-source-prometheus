@@ -16,8 +16,12 @@
 import * as pitometer from 'pitometer';
 export declare class Source implements pitometer.ISource {
     private queryUrl;
+    private timeStart;
+    private timeEnd;
+    private context;
     constructor({ queryUrl }: {
         queryUrl: any;
     });
-    fetch(query: any): Promise<any>;
+    setOptions(options: pitometer.IOptions): void;
+    fetch(query: any): Promise<pitometer.ISourceResult[] | boolean>;
 }
