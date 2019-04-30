@@ -32,12 +32,33 @@ class Source {
         this.queryUrl = '';
         this.queryUrl = queryUrl;
     }
+    setOptions(options) {
+        this.timeStart = options.timeStart;
+        this.timeEnd = options.timeEnd;
+        this.context = options.context;
+    }
     fetch(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = yield axios_1.default.post(`${this.queryUrl}?query=${query}`);
+            if (!this.timeStart || !this.timeEnd)
+                throw new Error('No start and/or end time was set!');
+            // tslint:disable-next-line: max-line-length
+            const response = yield axios_1.default
+                // tslint:disable-next-line: max-line-length
+                .post(`${this.queryUrl}?query=${encodeURIComponent(query)}&start=${this.timeStart}&end=${this.timeEnd}`);
             const promresult = response.data;
-            console.log(JSON.stringify(promresult));
-            return promresult.data.result[0].value[1];
+            if (promresult.status !== 'success') {
+                throw new Error(`Prometheus query returned returned ${promresult.status} for (${query})`);
+            }
+            if (promresult.data.resultType === 'matrix') {
+                throw new Error(`Prometheus query returned a not supported matrix result for (${query})`);
+            }
+            return promresult.data.result.map((entry) => {
+                return {
+                    key: JSON.stringify(entry.metric),
+                    timestamp: entry.value[0],
+                    value: entry.value[1],
+                };
+            });
         });
     }
 }
